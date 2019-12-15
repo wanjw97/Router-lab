@@ -29,6 +29,10 @@
  * 删除时按照 addr 和 len 匹配。
  */
 
+uint32_t change_endian(uint32_t a) {
+  return (a >> 24) + ((a >> 16) & 0xff) * 0x100 + ((a >> 8) & 0xff) * 0x10000 + (a & 0xff) * 0x1000000;
+}
+
 struct myNode{
   	RoutingTableEntry * entry;
   	myNode* next;
@@ -142,7 +146,7 @@ void genRipPack(uint32_t if_index, RipPacket* rip) {
 			rip->entries[rip->numEntries].addr = temp->entry->addr;
 			rip->entries[rip->numEntries].nexthop = temp->entry->nexthop;
 			rip->entries[rip->numEntries].mask = ((unsigned int)0xffffffff) >> (32 - temp->entry->len);
-			rip->entries[rip->numEntries].metric =  temp->entry->metric;
+			rip->entries[rip->numEntries].metric = change_endian(change_endian(temp->entry->metric) + 1) ;
 
 			rip->numEntries++;
 		}
@@ -158,10 +162,20 @@ void printTable() {
 		if (temp->entry->nexthop != 0) {
 			printf("via %d.%d.%d.%d ", temp->entry->nexthop & 0xff, (temp->entry->nexthop >> 8) & 0xff, (temp->entry->nexthop >> 16) & 0xff, (temp->entry->nexthop >> 24) & 0xff);
 		}
-		printf("dev r2r%d ", temp->entry->if_index + 1);
+		if (temp->entry->if_index == 0) {
+			printf("dev r2r1 ");
+		}
+		else if (temp->entry->if_index == 1) {
+			printf("dev r2r3 ");
+		}
+		else {
+			printf("dev eth%d ", temp->entry->if_index + 1);
+		}
+		
 		if (temp->entry->nexthop == 0) {
 			printf("scope link");
 		}
 		printf("\n");
+		temp = temp->next;
 	}
 }

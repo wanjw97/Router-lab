@@ -18,9 +18,6 @@ extern void genRipPack(uint32_t if_index, RipPacket* rip);
 extern uint16_t checkSum(uint8_t * packet);
 extern void printTable();
 
-uint32_t change_endian(uint32_t a) {
-  return (a >> 24) + ((a >> 16) & 0xff) * 0x100 + ((a >> 8) & 0xff) * 0x10000 + (a & 0xff) * 0x1000000;
-}
 
 uint32_t mask2len(uint32_t mask) {
   for (uint32_t i  = 0; i < 32; i++) {
@@ -38,7 +35,7 @@ uint8_t output[2048];
 // 2: 10.0.2.1
 // 3: 10.0.3.1
 // 你可以按需进行修改，注意端序
-in_addr_t addrs[N_IFACE_ON_BOARD] = {0x0203a8c0, 0x0102000a, 0x0104a8c0, 0x0103000a};
+in_addr_t addrs[N_IFACE_ON_BOARD] = {0x0203a8c0, 0x0104a8c0, 0x0102000a, 0x0103000a};
 
 int main(int argc, char *argv[]) {
   int res = HAL_Init(1, addrs);
@@ -91,10 +88,10 @@ int main(int argc, char *argv[]) {
           output[9] = 0x11; // protocal
           output[10] = 0x0; // checksum
           output[11] = 0x0;
-          output[12] = (addrs[j] >> 24) & 0xff; // src addr
-          output[13] = (addrs[j] >> 16) & 0xff;
-          output[14] = (addrs[j] >> 8) & 0xff;
-          output[15] = addrs[j] & 0xff;
+          output[12] = addrs[j] & 0xff; // src addr
+          output[13] = (addrs[j] >> 8) & 0xff; 
+          output[14] = (addrs[j] >> 16) & 0xff;
+          output[15] = (addrs[j] >> 24) & 0xff;        
           output[16] = 0xe0; // dst addr
           output[17] = 0x00;
           output[18] = 0x00;
@@ -209,10 +206,10 @@ int main(int argc, char *argv[]) {
           output[9] = 0x11; // protocal
           output[10] = 0x0; // checksum
           output[11] = 0x0;
-          output[12] = (addrs[if_index] >> 24) & 0xff; // src addr
-          output[13] = (addrs[if_index] >> 16) & 0xff;
-          output[14] = (addrs[if_index] >> 8) & 0xff;
-          output[15] = addrs[if_index] & 0xff;
+          output[12] = addrs[j] & 0xff; // src addr
+          output[13] = (addrs[j] >> 8) & 0xff; 
+          output[14] = (addrs[j] >> 16) & 0xff;
+          output[15] = (addrs[j] >> 24) & 0xff;       
           output[16] = *(packet + 12); // dst addr
           output[17] = *(packet + 13);
           output[18] = *(packet + 14);
@@ -257,7 +254,7 @@ int main(int argc, char *argv[]) {
               .len = mask2len(rip.entries[i].mask),
               .if_index = if_index,
               .nexthop = src_addr,
-              .metric = change_endian(change_endian(rip.entries[i].metric) + 1),
+              .metric = rip.entries[i].metric,
               .time_stamp = time
             };
             entry.addr = ((unsigned int)(entry.addr << entry.len)) >> entry.len;

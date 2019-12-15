@@ -206,10 +206,10 @@ int main(int argc, char *argv[]) {
           output[9] = 0x11; // protocal
           output[10] = 0x0; // checksum
           output[11] = 0x0;
-          output[12] = addrs[j] & 0xff; // src addr
-          output[13] = (addrs[j] >> 8) & 0xff; 
-          output[14] = (addrs[j] >> 16) & 0xff;
-          output[15] = (addrs[j] >> 24) & 0xff;       
+          output[12] = addrs[if_index] & 0xff; // src addr
+          output[13] = (addrs[if_index] >> 8) & 0xff; 
+          output[14] = (addrs[if_index] >> 16) & 0xff;
+          output[15] = (addrs[if_index] >> 24) & 0xff;       
           output[16] = *(packet + 12); // dst addr
           output[17] = *(packet + 13);
           output[18] = *(packet + 14);
